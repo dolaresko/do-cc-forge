@@ -76,7 +76,7 @@ def main() -> None:
         _mark(session_id, "crit")
         output_context("PostToolUse",
             f"[CONTEXT CRITICAL: ~{pct*100:.0f}% used]\n"
-            "Delegate large file reads to subagents. Consider /compact.")
+            "Delegate large file reads to subagents. Consider /compact to recover space.")
 
     if pct >= warn:
         if _warned(session_id, "warn"):

@@ -8,7 +8,7 @@ Checks:
   1. Conventional commit format: <type>[scope]: <description>
   2. Subject <= 50 chars
   3. Body lines <= 72 chars
-  4. Body depth proportional to diff size
+  4. Body detail proportional to diff size
   5. No AI attribution
 """
 from __future__ import annotations

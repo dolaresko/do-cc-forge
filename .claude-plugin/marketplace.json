@@ -1,0 +1,28 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "do-cc-forge",
+  "owner": {
+    "name": "do-cc-forge"
+  },
+  "metadata": {
+    "description": "Quality guardrails for Claude Code + BMAD workflows. Commit enforcement, context monitoring, todo guard, auto-compress, and reusable agents.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "do-cc-forge",
+      "source": "./plugins/do-cc-forge",
+      "description": "Quality guardrails for Claude Code + BMAD workflows.",
+      "version": "1.0.0",
+      "homepage": "https://github.com/YOUR_USERNAME/do-cc-forge",
+      "repository": "https://github.com/YOUR_USERNAME/do-cc-forge",
+      "license": "MIT",
+      "keywords": ["bmad", "hooks", "guardrails", "code-review", "context", "quality"],
+      "category": "productivity",
+      "skills": [
+        "./skills/docc-code-review",
+        "./skills/docc-wrap-story"
+      ]
+    }
+  ]
+}

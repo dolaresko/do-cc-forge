@@ -31,11 +31,6 @@ from hook_utils import (
 WARN_LINES     = int(os.environ.get("DOCC_HEALTH_WARN_LINES", 120))
 COMPRESS_LINES = int(os.environ.get("DOCC_HEALTH_COMPRESS_LINES", 200))
 
-
-# ---------------------------------------------------------------------------
-# Compression — pure Python, no LLM
-# ---------------------------------------------------------------------------
-
 FILLER_PHRASES = [
     "in order to", "make sure to", "make sure that", "please make sure",
     "please ensure that", "it is important to", "it is worth noting that",
@@ -57,8 +52,9 @@ REPLACEMENTS = {
     "utilizes":       "uses",
     "utilized":       "used",
     "utilizing":      "using",
-    "make sure":      "ensure",
     "implement a solution for": "fix",
+    "make sure to":   "",
+    "make sure":      "ensure",
 }
 
 HARDCODED_PATH_RE = re.compile(
@@ -72,12 +68,11 @@ def _is_code_fence(line: str) -> bool:
 
 
 def _compress_text(text: str) -> str:
-    """Compress prose, preserve inline code and URLs."""
     segments = re.split(r'(`[^`]+`|https?://\S+)', text)
     result = []
     for i, seg in enumerate(segments):
         if i % 2 == 1:
-            result.append(seg)  # code/URL — preserve exactly
+            result.append(seg)
         else:
             result.append(_compress_prose(seg))
     return "".join(result)
@@ -97,7 +92,7 @@ def _compress_prose(text: str) -> str:
 def _compress_line(line: str) -> str:
     stripped = line.strip()
     if stripped.startswith('#'):
-        return line  # preserve headings exactly
+        return line
     list_match = re.match(r'^(\s*[-*+]\s+|\s*\d+\.\s+)(.*)', line)
     if list_match:
         return list_match.group(1) + _compress_text(list_match.group(2))
@@ -120,10 +115,6 @@ def compress_markdown(content: str) -> str:
     return '\n'.join(output)
 
 
-# ---------------------------------------------------------------------------
-# Health analysis
-# ---------------------------------------------------------------------------
-
 def analyze(filepath: Path) -> dict[str, Any]:
     try:
         content = filepath.read_text(encoding="utf-8")
@@ -138,10 +129,6 @@ def analyze(filepath: Path) -> dict[str, Any]:
         "content": content,
     }
 
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     data = parse_hook_input(read_stdin_safe())
