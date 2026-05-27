@@ -23,7 +23,7 @@ Both are great projects. This repo exists because neither fits well with BMAD-ba
 ## Install
 
 ```
-/plugin marketplace add YOUR_GITHUB_USERNAME/do-cc-forge
+/plugin marketplace add dolaresko/do-cc-forge
 /plugin install do-cc-forge@do-cc-forge
 ```
 

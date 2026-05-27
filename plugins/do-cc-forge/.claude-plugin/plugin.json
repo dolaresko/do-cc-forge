@@ -4,9 +4,9 @@
   "description": "Quality guardrails for Claude Code + BMAD workflows. Commit enforcement, context monitoring, todo guard, CLAUDE.md auto-compress, and reusable agents.",
   "author": {
     "name": "do-cc-forge",
-    "url": "https://github.com/YOUR_USERNAME/do-cc-forge"
+    "url": "https://github.com/dolaresko/do-cc-forge"
   },
-  "repository": "https://github.com/YOUR_USERNAME/do-cc-forge",
+  "repository": "https://github.com/dolaresko/do-cc-forge",
   "license": "MIT",
   "keywords": ["bmad", "hooks", "guardrails", "code-review", "context", "quality"],
   "skills": [
