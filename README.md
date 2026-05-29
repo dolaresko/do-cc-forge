@@ -4,7 +4,7 @@ Quality guardrails for Claude Code, built for [BMAD](https://github.com/bmad-cod
 
 Hooks that enforce standards automatically + skills and agents that keep your context clean.
 
-Install once globally — works in every project.
+Install per-project (recommended for BMAD repos) or globally — your call.
 
 ---
 
@@ -26,6 +26,11 @@ Both are great projects. This repo exists because neither fits well with BMAD-ba
 /plugin marketplace add dolaresko/do-cc-forge
 /plugin install do-cc-forge@do-cc-forge
 ```
+
+When prompted for scope:
+- **project** — enables it for this repo only, committed to `.claude/settings.json` so collaborators get it automatically. Best for a BMAD project with shared workflow.
+- **user** — every project on your machine.
+- **local** — this repo, just you (not committed).
 
 Restart Claude Code. Done.
 
@@ -69,7 +74,20 @@ Restart Claude Code. Done.
 
 ## Configuration
 
-All settings via env vars. Add to `~/.zshrc` or `~/.bashrc`:
+All settings are env vars. Two ways to set them:
+
+**Project-wide (recommended)** — add an `env` block to `.claude/settings.json`. It's committed, so collaborators get the same config automatically:
+
+```json
+{
+  "env": {
+    "DOCC_REVIEW_STACK": "Next.js 15, TypeScript strict, tRPC",
+    "DOCC_REVIEW_EXTRA_RULES": "./.claude/review-rules.md"
+  }
+}
+```
+
+**Personal** — export from `~/.zshrc` or `~/.bashrc` (use for anything machine-specific or secret):
 
 ```bash
 # CLAUDE.md health
@@ -88,6 +106,7 @@ export DOCC_DANGER_GUARD=1               # set 0 to disable risky-command warnin
 export DOCC_REVIEW_MODEL=deepseek/deepseek-v4-pro
 export DOCC_REVIEW_FALLBACK=qwen/qwen3-coder-next
 export DOCC_REVIEW_STACK="Next.js 15, TypeScript strict, tRPC"  # injected into review prompt
+export DOCC_REVIEW_EXTRA_RULES=./.claude/review-rules.md        # project rules + known false-positives, injected verbatim
 
 # Session memory (docc-wrap-story skill)
 export DOCC_PROJECT_LOG=./docs/project-log.md       # default
