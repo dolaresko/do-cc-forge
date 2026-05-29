@@ -18,10 +18,18 @@ Independent code review via a second AI model (OpenRouter) to catch what self-re
 | `DOCC_REVIEW_MODEL` | `deepseek/deepseek-v4-pro` | Primary review model |
 | `DOCC_REVIEW_FALLBACK` | `qwen/qwen3-coder-next` | Fallback model |
 | `DOCC_REVIEW_STACK` | *(empty)* | Extra stack context injected into system prompt |
+| `DOCC_REVIEW_EXTRA_RULES` | *(empty)* | Path to a project file with extra review rules + known false-positives, injected verbatim into the system prompt |
 
 Set `DOCC_REVIEW_STACK` to describe your project's tech stack for more relevant feedback:
 ```bash
 export DOCC_REVIEW_STACK="Next.js 15 App Router, TypeScript strict, tRPC v11, Drizzle ORM"
+```
+
+Set `DOCC_REVIEW_EXTRA_RULES` to a project file (e.g. `./.claude/review-rules.md`) holding
+business rules, project conventions, and reviewer false-positives. This lets a project layer
+its specifics on top of the generic prompt without forking the skill:
+```bash
+export DOCC_REVIEW_EXTRA_RULES="./.claude/review-rules.md"
 ```
 
 ---
@@ -75,6 +83,13 @@ If nothing critical — say so explicitly.
 ```
 
 If `DOCC_REVIEW_STACK` is set, append: `Stack: <value>`
+
+If `DOCC_REVIEW_EXTRA_RULES` is set and the file exists, read it and append its full
+contents to the system prompt under a section titled:
+`## Project-specific rules and known false-positives (do not re-flag these)`
+This layers a project's business rules and reviewer false-positives on top of the
+generic prompt without forking the skill.
+
 If story ACs were found, append them to the user message.
 
 ### Step 3: Call OpenRouter

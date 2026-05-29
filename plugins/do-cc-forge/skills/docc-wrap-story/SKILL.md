@@ -66,7 +66,23 @@ Find the current epic section (e.g. `## Epic 3`). If it exists, append. If not, 
 
 Keep entries concise — one line per item.
 
-### Step 4: Confirm
+### Step 4: Daily rollup
+
+Maintain a per-day summary at the top of `DOCC_PROJECT_LOG` under a `## Daily log` section.
+Find today's entry (`### YYYY-MM-DD`); if absent, create it. Append a one-line note of what
+advanced today — even mid-story, even if no story closed:
+
+```markdown
+## Daily log
+
+### YYYY-MM-DD
+- <what moved forward today: story progress, decision, blocker>
+```
+
+This gives continuity across days, not just across stories — the next session can see
+"what happened yesterday" at a glance.
+
+### Step 5: Confirm
 
 ```
 Memory updated. Ready for /clear.
