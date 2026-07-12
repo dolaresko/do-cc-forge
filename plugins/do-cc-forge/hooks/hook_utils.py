@@ -74,7 +74,16 @@ def output_stop_block(reason: str, context: str) -> None:
 
 
 def output_deny(reason: str) -> None:
-    print(json.dumps({"decision": "block", "reason": reason}))
+    # PreToolUse deny. The legacy top-level {"decision": "block"} form was
+    # deprecated and is now ignored by Claude Code, so a blocked tool call
+    # ran anyway. Emit the current hookSpecificOutput.permissionDecision form.
+    print(json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": reason,
+        }
+    }))
     sys.exit(0)
 
 

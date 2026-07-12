@@ -36,11 +36,34 @@ AI_PATTERNS = [
 
 
 def extract_message(command: str) -> str | None:
-    m = re.search(r'-m\s+"\$\(cat\s+<<[\'"]?EOF[\'"]?\s*\n(.+?)\nEOF\s*\)"', command, re.DOTALL)
-    if m:
-        return m.group(1)
-    m = re.search(r'-m\s+["\'](.+?)["\']', command, re.DOTALL)
-    return m.group(1) if m else None
+    """Return every -m message joined, in source order.
+
+    A commit may pass several -m flags (git concatenates them as paragraphs),
+    so an AI-attribution trailer riding a second -m must still be scanned —
+    reading only the first -m let `-m "subject" -m "Co-Authored-By: ..."`
+    slip through. Handles both the heredoc form
+    (-m "$(cat <<'EOF' ... EOF )") and inline-quoted form (-m "text"/-m 'text').
+    """
+    found: list[tuple[int, str]] = []
+
+    heredoc = re.compile(
+        r'-m\s+"\$\(\s*cat\s+<<[\'"]?(\w+)[\'"]?\s*\n(.*?)\n\1\s*\)"',
+        re.DOTALL,
+    )
+    for m in heredoc.finditer(command):
+        found.append((m.start(), m.group(2)))
+    # Blank heredoc spans (length-preserving) so the inline pass below can't
+    # re-match the -m or any quotes inside a heredoc body.
+    masked = heredoc.sub(lambda m: ' ' * (m.end() - m.start()), command)
+
+    inline = re.compile(r'-m\s+"([^"]*)"|-m\s+\'([^\']*)\'')
+    for m in inline.finditer(masked):
+        found.append((m.start(), m.group(1) if m.group(1) is not None else m.group(2)))
+
+    if not found:
+        return None
+    found.sort(key=lambda t: t[0])
+    return '\n\n'.join(text for _, text in found)
 
 
 def validate_format(msg: str) -> list[str]:
