@@ -10,7 +10,6 @@
   "license": "MIT",
   "keywords": ["bmad", "hooks", "guardrails", "code-review", "context", "quality"],
   "skills": [
-    "./skills/docc-code-review",
     "./skills/docc-wrap-story"
   ]
 }

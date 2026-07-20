@@ -20,7 +20,6 @@
       "keywords": ["bmad", "hooks", "guardrails", "code-review", "context", "quality"],
       "category": "productivity",
       "skills": [
-        "./skills/docc-code-review",
         "./skills/docc-wrap-story"
       ]
     }

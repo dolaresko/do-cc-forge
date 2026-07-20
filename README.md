@@ -57,16 +57,16 @@ Restart Claude Code. Done.
 
 | Skill | Trigger | What it does |
 |---|---|---|
-| `docc-code-review` | `run code review` | Independent AI review of the current branch via OpenRouter before merge. |
 | `docc-wrap-story` | `wrap story` | Captures decisions and gotchas into persistent memory before `/clear`. |
 
-### Agents (invoke manually in prompts)
+### Agents (invoke manually in prompts, or auto-triggered by description)
 
 | Agent | How to invoke | What it does |
 |---|---|---|
 | `docc-librarian` | `Agent(subagent_type="docc-librarian", prompt="...")` | Reads large files/diffs, returns concise summaries — keeps main context clean. |
 | `docc-reviewer` | `Agent(subagent_type="docc-reviewer", prompt="...")` | Post-implementation code review with `file:line` evidence. |
 | `docc-auditor` | `Agent(subagent_type="docc-auditor", prompt="...")` | Security audit — OWASP issues, secrets, injection flaws, lock-file risks. |
+| `docc-code-reviewer` | `run code review` or `Agent(subagent_type="docc-code-reviewer", prompt="...")` | Independent second-opinion review of the current branch via OpenRouter, in isolated context — before merge. |
 
 ---
 
@@ -97,11 +97,14 @@ export DOCC_AUTO_COMPRESS=1              # set 0 to disable auto-compress
 export DOCC_CONTEXT_WARN_PCT=70          # warn threshold (percent)
 export DOCC_CONTEXT_CRIT_PCT=85          # critical threshold (percent)
 
-# Code review (docc-code-review skill)
+# Code review (docc-code-reviewer agent)
 export DOCC_REVIEW_MODEL=deepseek/deepseek-v4-pro
 export DOCC_REVIEW_FALLBACK=qwen/qwen3-coder-next
 export DOCC_REVIEW_STACK="Next.js 15, TypeScript strict, tRPC"  # injected into review prompt
 export DOCC_REVIEW_EXTRA_RULES=./.claude/review-rules.md        # project rules + known false-positives, injected verbatim
+export DOCC_REVIEW_MAX_TOKENS=4000       # cap per model call — bounds cost of a stuck/looping response
+export DOCC_REVIEW_INLINE_LIMIT=6000     # diff size (chars) below which it's passed inline
+export DOCC_REVIEW_CHUNK_THRESHOLD=40000 # diff size (chars) above which it's split and reviewed per-file
 
 # Session memory (docc-wrap-story skill)
 export DOCC_PROJECT_LOG=./docs/project-log.md       # default
@@ -128,11 +131,19 @@ Typical savings: 30–50% of prose. Code and structure untouched.
 
 ---
 
-## docc-code-review: requires OpenRouter
+## docc-code-reviewer: requires OpenRouter
 
-The `docc-code-review` skill uses a second AI model via [OpenRouter](https://openrouter.ai) to catch what self-review in the same Claude Code session misses. Requires the `openrouterai` MCP to be connected.
+The `docc-code-reviewer` agent uses a second AI model via [OpenRouter](https://openrouter.ai) to catch what self-review in the same Claude Code session misses. Requires the `openrouterai` MCP to be connected. Runs in its own isolated context and hands the calling session a compact `file:line — issue — verdict` summary, not a full prose report.
 
 Set `DOCC_REVIEW_STACK` to your project's tech stack for more relevant feedback.
+
+Large diffs are written to `./.claude/tmp/` (gitignored automatically) instead of `/tmp`, so they stay
+readable by Claude Code's tools, and are deleted once the review completes. Diffs at or above
+`DOCC_REVIEW_CHUNK_THRESHOLD` are split and reviewed per-file/group rather than sent as one blob — this
+also reduces the chance of the primary model entering a repetition loop on a large diff. If a call does
+stall or loop, that's detected from the response itself (truncated with no output sections, or repeated
+lines) and the fallback model kicks in immediately, rather than waiting for the primary model's budget to
+run out.
 
 ---
 
@@ -152,7 +163,7 @@ Both paths are configurable via env vars.
 - macOS or Linux
 - Python 3.11+
 - Claude Code with plugin and hooks support
-- OpenRouter MCP connected (for `docc-code-review` only)
+- OpenRouter MCP connected (for `docc-code-reviewer` only)
 
 ---
 
