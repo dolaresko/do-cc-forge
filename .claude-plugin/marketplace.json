@@ -5,23 +5,20 @@
     "name": "do-cc-forge"
   },
   "metadata": {
-    "description": "Quality guardrails for Claude Code + BMAD workflows. Commit enforcement, context monitoring, todo guard, auto-compress, and reusable agents.",
-    "version": "1.0.0"
+    "description": "Quality guardrails for Claude Code + BMAD workflows. Commit enforcement, context monitoring, auto-compress, and reusable agents.",
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "do-cc-forge",
       "source": "./plugins/do-cc-forge",
       "description": "Quality guardrails for Claude Code + BMAD workflows.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "homepage": "https://github.com/dolaresko/do-cc-forge",
       "repository": "https://github.com/dolaresko/do-cc-forge",
       "license": "MIT",
       "keywords": ["bmad", "hooks", "guardrails", "code-review", "context", "quality"],
-      "category": "productivity",
-      "skills": [
-        "./skills/docc-wrap-story"
-      ]
+      "category": "productivity"
     }
   ]
 }

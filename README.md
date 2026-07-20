@@ -2,7 +2,7 @@
 
 Quality guardrails for Claude Code, built for [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) workflows.
 
-Hooks that enforce standards automatically + skills and agents that keep your context clean.
+Hooks that enforce standards automatically + agents that keep your context clean.
 
 Install per-project (recommended for BMAD repos) or globally — your call.
 
@@ -43,6 +43,22 @@ Restart Claude Code. Done.
 
 ---
 
+## Changelog
+
+### 0.2.0 (2026-07-20)
+
+This pass reworked hooks and agents based on real usage — two hooks turned out to be dead code, two more had bugs that silently disabled them, and the two skills were converted to subagents after hitting production failures.
+
+- **Removed `docc-danger-guard`** — warned on 4 curl-pipe patterns but never actually blocked anything, so it was dead weight.
+- **Removed `docc-todo-guard`** — conflicted with BMAD's own story/task tracking, and was non-functional anyway (it read a transcript field the hook payload never provides).
+- **Fixed `docc-context-monitor`** — it read a nonexistent `context_window` field and silently never fired. Now estimates usage from the transcript at `transcript_path`, which the payload does provide.
+- **Fixed `docc-health-check`** — the "hardcoded path may go stale" warning now only fires when the referenced path doesn't actually exist, and the `CLAUDE.md.original.md` backup is no longer clobbered by a second compression run.
+- **Converted `docc-code-review` (skill) → `docc-code-reviewer` (agent)** — two production sessions hit real failures: large diffs forced an improvised `/tmp` workaround the tool couldn't read back, and the review model occasionally burned its full token budget in a repetition loop before ever falling back. As an agent it runs in isolated context, writes scratch diffs to `./.claude/tmp/` (readable, gitignored, cleaned up), chunks large diffs, detects stuck/looping model output, and returns a compact structured summary instead of full prose.
+- **Converted `docc-wrap-story` (skill) → `docc-wrap-story` (agent)** — same isolated-context rationale: it now runs as a subagent and hands back a compact line-per-item summary instead of a full prose confirmation, so this routine housekeeping step doesn't burn the calling session's context.
+- Net effect: 3 hooks (down from 5), 5 agents (up from 3, all isolated-context with structured output), 0 skills (down from 2).
+
+---
+
 ## What's inside
 
 ### Hooks (automatic — fire in the background)
@@ -53,12 +69,6 @@ Restart Claude Code. Done.
 | `docc-commit-guard` | Before `git commit` | Enforces conventional commits, subject ≤50 chars, body depth scaled to diff size. |
 | `docc-context-monitor` | After every tool | Warns at 70% context usage, critical alert at 85%. |
 
-### Skills (trigger by phrase or invoke manually)
-
-| Skill | Trigger | What it does |
-|---|---|---|
-| `docc-wrap-story` | `wrap story` | Captures decisions and gotchas into persistent memory before `/clear`. |
-
 ### Agents (invoke manually in prompts, or auto-triggered by description)
 
 | Agent | How to invoke | What it does |
@@ -67,6 +77,7 @@ Restart Claude Code. Done.
 | `docc-reviewer` | `Agent(subagent_type="docc-reviewer", prompt="...")` | Post-implementation code review with `file:line` evidence. |
 | `docc-auditor` | `Agent(subagent_type="docc-auditor", prompt="...")` | Security audit — OWASP issues, secrets, injection flaws, lock-file risks. |
 | `docc-code-reviewer` | `run code review` or `Agent(subagent_type="docc-code-reviewer", prompt="...")` | Independent second-opinion review of the current branch via OpenRouter, in isolated context — before merge. |
+| `docc-wrap-story` | `wrap story` or `Agent(subagent_type="docc-wrap-story", prompt="...")` | Consolidates session decisions/gotchas into persistent memory before `/clear`, in isolated context. |
 
 ---
 
@@ -106,7 +117,7 @@ export DOCC_REVIEW_MAX_TOKENS=4000       # cap per model call — bounds cost of
 export DOCC_REVIEW_INLINE_LIMIT=6000     # diff size (chars) below which it's passed inline
 export DOCC_REVIEW_CHUNK_THRESHOLD=40000 # diff size (chars) above which it's split and reviewed per-file
 
-# Session memory (docc-wrap-story skill)
+# Session memory (docc-wrap-story agent)
 export DOCC_PROJECT_LOG=./docs/project-log.md       # default
 export DOCC_MEMORY_FILE=./.claude/memory/MEMORY.md  # default
 
@@ -149,10 +160,15 @@ run out.
 
 ## docc-wrap-story: BMAD session memory
 
-Run at the end of every story before `/clear`. The skill scans the session for decisions, gotchas, and patterns, then writes them to:
+Run at the end of every story before `/clear`. Unlike a skill, this agent runs in its own isolated
+context — it can't see the calling session's conversation, so hand it the decisions, gotchas, and
+patterns to capture directly in the invocation prompt. It writes them to:
 
 - `./.claude/memory/MEMORY.md` — per-session notes (read by future sessions)
 - `./docs/project-log.md` — project-wide log grouped by epic
+
+and returns a compact line-per-item summary instead of a full prose confirmation, so this routine
+housekeeping step doesn't burn the calling session's context budget.
 
 Both paths are configurable via env vars.
 
