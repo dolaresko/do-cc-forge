@@ -61,18 +61,6 @@ def output_context(event: str, message: str) -> None:
     sys.exit(0)
 
 
-def output_stop_block(reason: str, context: str) -> None:
-    print(json.dumps({
-        "decision": "block",
-        "reason": reason,
-        "hookSpecificOutput": {
-            "hookEventName": "Stop",
-            "additionalContext": context,
-        }
-    }))
-    sys.exit(0)
-
-
 def output_deny(reason: str) -> None:
     # PreToolUse deny. The legacy top-level {"decision": "block"} form was
     # deprecated and is now ignored by Claude Code, so a blocked tool call
@@ -103,10 +91,6 @@ def parse_bool_env(name: str, default: bool = True) -> bool:
 # ---------------------------------------------------------------------------
 # Session helpers
 # ---------------------------------------------------------------------------
-
-def is_agent_session(data: dict) -> bool:
-    return bool(data.get("agent_type") or data.get("is_subagent"))
-
 
 def log_debug(msg: str) -> None:
     if parse_bool_env("DOCC_DEBUG", default=False):

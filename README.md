@@ -12,7 +12,7 @@ Install per-project (recommended for BMAD repos) or globally — your call.
 
 Both are great projects. This repo exists because neither fits well with BMAD-based workflows out of the box.
 
-**[oh-my-claude](https://github.com/TechDufus/oh-my-claude)** ships useful hooks but also `ultrawork` mode and delegation hooks that conflict with BMAD's phase structure. do-cc-forge takes only the parts that complement BMAD: commit quality, context monitoring, todo enforcement, and the agent definitions.
+**[oh-my-claude](https://github.com/TechDufus/oh-my-claude)** ships useful hooks but also `ultrawork` mode and delegation hooks that conflict with BMAD's phase structure. do-cc-forge takes only the parts that complement BMAD: commit quality, context monitoring, and the agent definitions.
 
 **[caveman](https://github.com/JuliusBrussee/caveman)** compresses Claude's output tokens — not context window usage. The real bottleneck in long BMAD sessions is the context window, which `/clear` and `/compact` already handle structurally. Caveman's one useful idea here is `caveman-compress` — shrinking `CLAUDE.md` to save input tokens. do-cc-forge bakes that logic into `docc-health-check` as an autonomous background hook, with no extra CLI dependency.
 
@@ -50,10 +50,8 @@ Restart Claude Code. Done.
 | Hook | Fires | What it does |
 |---|---|---|
 | `docc-health-check` | Session start | Checks `CLAUDE.md` size. Warns at 120 lines, auto-compresses at 200. |
-| `docc-danger-guard` | Before bash | Warns on `curl\|sh`, `wget\|sh` and similar risky patterns. |
 | `docc-commit-guard` | Before `git commit` | Enforces conventional commits, subject ≤50 chars, body depth scaled to diff size. |
 | `docc-context-monitor` | After every tool | Warns at 70% context usage, critical alert at 85%. |
-| `docc-todo-guard` | Before session stop | Blocks stop if `TodoWrite`/`TaskList` has open items. |
 
 ### Skills (trigger by phrase or invoke manually)
 
@@ -98,9 +96,6 @@ export DOCC_AUTO_COMPRESS=1              # set 0 to disable auto-compress
 # Context window monitoring
 export DOCC_CONTEXT_WARN_PCT=70          # warn threshold (percent)
 export DOCC_CONTEXT_CRIT_PCT=85          # critical threshold (percent)
-
-# Guards
-export DOCC_DANGER_GUARD=1               # set 0 to disable risky-command warnings
 
 # Code review (docc-code-review skill)
 export DOCC_REVIEW_MODEL=deepseek/deepseek-v4-pro
@@ -165,7 +160,7 @@ Both paths are configurable via env vars.
 
 Built on ideas and code from two MIT-licensed projects:
 
-- **[oh-my-claude](https://github.com/TechDufus/oh-my-claude)** by TechDufus — hook architecture, commit quality enforcer, context monitor, todo enforcer, danger guard, and agent definitions. `hook_utils.py` is adapted directly from this project.
+- **[oh-my-claude](https://github.com/TechDufus/oh-my-claude)** by TechDufus — hook architecture, commit quality enforcer, context monitor, and agent definitions. `hook_utils.py` is adapted directly from this project.
 - **[caveman](https://github.com/JuliusBrussee/caveman)** by Julius Brussee — the `caveman-compress` concept: compressing memory files to reduce input tokens while preserving code and structure exactly. The auto-compress logic in `docc-health-check` is inspired by this approach, reimplemented as a standalone Python function.
 
 ---

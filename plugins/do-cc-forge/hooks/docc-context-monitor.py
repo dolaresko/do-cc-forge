@@ -45,17 +45,14 @@ def _mark(session_id: str, level: str) -> None:
 
 
 def _usage(data: dict) -> float:
-    native = get_nested(data, "context_window", "used_percentage")
-    if native is not None:
-        try:
-            return float(native) / 100.0
-        except (TypeError, ValueError):
-            pass
-    transcript = get_nested(data, "transcript", default=[])
-    if not transcript:
+    transcript_path = get_nested(data, "transcript_path")
+    if not transcript_path:
         return 0.0
-    chars = sum(len(str(e)) for e in transcript)
-    return (chars // 4) / CONTEXT_LIMIT
+    try:
+        size = Path(transcript_path).stat().st_size
+    except OSError:
+        return 0.0
+    return (size // 4) / CONTEXT_LIMIT
 
 
 def main() -> None:

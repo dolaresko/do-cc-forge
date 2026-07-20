@@ -19,12 +19,6 @@
         "hooks": [
           {
             "type": "command",
-            "statusMessage": "Checking for risky commands...",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/docc-danger-guard.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
             "statusMessage": "Validating commit message...",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/docc-commit-guard.py",
             "timeout": 10
@@ -41,19 +35,6 @@
             "statusMessage": "Monitoring context usage...",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/docc-context-monitor.py",
             "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "statusMessage": "Checking for incomplete tasks...",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/docc-todo-guard.py",
-            "timeout": 10
           }
         ]
       }

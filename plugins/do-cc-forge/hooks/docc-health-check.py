@@ -115,17 +115,26 @@ def compress_markdown(content: str) -> str:
     return '\n'.join(output)
 
 
-def analyze(filepath: Path) -> dict[str, Any]:
+def _stale_paths(content: str, project_root: Path) -> list[str]:
+    stale = []
+    for match in HARDCODED_PATH_RE.finditer(content):
+        path_ref = match.group(0).split(':', 1)[0]
+        if not (project_root / path_ref).exists():
+            stale.append(path_ref)
+    return stale
+
+
+def analyze(filepath: Path, project_root: Path) -> dict[str, Any]:
     try:
         content = filepath.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return {"ok": True}
     lines = content.split('\n')
-    hardcoded = HARDCODED_PATH_RE.findall(content)
+    stale_paths = _stale_paths(content, project_root)
     return {
         "ok": False,
         "line_count": len(lines),
-        "hardcoded_paths": len(hardcoded),
+        "stale_paths": stale_paths,
         "content": content,
     }
 
@@ -142,15 +151,16 @@ def main() -> None:
     if not claudemd.exists():
         output_empty()
 
-    info = analyze(claudemd)
+    info = analyze(claudemd, cwd)
     if info.get("ok"):
         output_empty()
 
     lc = info["line_count"]
     warnings: list[str] = []
 
-    if info["hardcoded_paths"] > 0:
-        warnings.append(f"{info['hardcoded_paths']} hardcoded file path(s) detected (may go stale)")
+    if info["stale_paths"]:
+        paths_text = ", ".join(info["stale_paths"][:5])
+        warnings.append(f"{len(info['stale_paths'])} hardcoded file path(s) no longer exist: {paths_text}")
 
     if lc >= COMPRESS_LINES:
         if not parse_bool_env("DOCC_AUTO_COMPRESS", default=True):
@@ -163,7 +173,8 @@ def main() -> None:
                 compressed_lc = len(compressed.split('\n'))
                 if compressed_lc < lc - 5:
                     backup = claudemd.with_name("CLAUDE.md.original.md")
-                    backup.write_text(info["content"], encoding="utf-8")
+                    if not backup.exists():
+                        backup.write_text(info["content"], encoding="utf-8")
                     claudemd.write_text(compressed, encoding="utf-8")
                     saved = lc - compressed_lc
                     warnings.append(
