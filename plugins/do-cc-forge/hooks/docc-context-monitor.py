@@ -22,7 +22,7 @@ from hook_utils import (
 
 DEFAULT_WARN_PCT = 70
 DEFAULT_CRIT_PCT = 85
-CONTEXT_LIMIT   = 200_000
+CONTEXT_LIMIT   = 1000000
 _DEDUP_DIR      = Path("/tmp")
 
 
