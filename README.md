@@ -67,7 +67,7 @@ This pass reworked hooks and agents based on real usage — two hooks turned out
 |---|---|---|
 | `docc-health-check` | Session start | Checks `CLAUDE.md` size. Warns at 120 lines, auto-compresses at 200. |
 | `docc-commit-guard` | Before `git commit` | Enforces conventional commits, subject ≤50 chars, body depth scaled to diff size. |
-| `docc-context-monitor` | After every tool | Warns at 70% context usage, critical alert at 85%. |
+| `docc-context-monitor` | After every tool | Warns at 70% context usage, critical alert at 85%, against a 1M-token context window default. |
 
 ### Agents (invoke manually in prompts, or auto-triggered by description)
 
